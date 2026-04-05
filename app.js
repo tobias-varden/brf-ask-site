@@ -115,6 +115,7 @@ async function synthesizeOpenAI(query, topChunks) {
 
   const resp = await fetch(endpoint.replace(/\/$/, '') + '/chat/completions', {
     method: 'POST',
+    signal: AbortSignal.timeout(60_000),
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model,
