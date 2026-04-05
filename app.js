@@ -93,6 +93,71 @@ async function synthesize(query, topChunks) {
   return session.promptStreaming(prompt);
 }
 
+function loadConfig() {
+  document.getElementById('llm-endpoint').value = localStorage.getItem('llm_endpoint') || '';
+  document.getElementById('llm-model').value = localStorage.getItem('llm_model') || '';
+  document.getElementById('llm-endpoint').addEventListener('change', e => {
+    localStorage.setItem('llm_endpoint', e.target.value.trim());
+  });
+  document.getElementById('llm-model').addEventListener('change', e => {
+    localStorage.setItem('llm_model', e.target.value.trim());
+  });
+}
+
+async function synthesizeOpenAI(query, topChunks) {
+  const endpoint = localStorage.getItem('llm_endpoint') || '';
+  if (!endpoint) return null;
+  const model = localStorage.getItem('llm_model') || 'default';
+
+  const context = topChunks
+    .map((c, i) => `[${i + 1}] ${c.title}\n${c.body}`)
+    .join('\n\n---\n\n');
+
+  const resp = await fetch(endpoint.replace(/\/$/, '') + '/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      stream: true,
+      messages: [
+        {
+          role: 'system',
+          content: 'Answer the question using only the provided notes. Be concise. If the notes do not contain the answer, say so.',
+        },
+        {
+          role: 'user',
+          content: `Notes:\n${context}\n\nQuestion: ${query}`,
+        },
+      ],
+    }),
+  });
+
+  if (!resp.ok) throw new Error(`LLM endpoint returned ${resp.status}`);
+  return resp.body;
+}
+
+async function renderOpenAIStream(body, targetEl) {
+  targetEl.textContent = '';
+  const reader = body.pipeThrough(new TextDecoderStream()).getReader();
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += value;
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') return;
+      try {
+        const delta = JSON.parse(data).choices?.[0]?.delta?.content;
+        if (delta) targetEl.textContent += delta;
+      } catch {}
+    }
+  }
+}
+
 async function renderStreamingAnswer(stream, targetEl) {
   targetEl.textContent = '';
   const reader = stream.getReader();
@@ -144,22 +209,32 @@ async function handleQuery(e) {
   const answerSection = document.getElementById('answer-section');
   
   try {
-    const stream = await synthesize(queryText, results);
-    if (stream) {
+    const chromeStream = await synthesize(queryText, results);
+    if (chromeStream) {
       setStatus('');
       answerSection.style.display = 'block';
-      await renderStreamingAnswer(stream, answerEl);
-    } else {
-      setStatus('Chrome AI unavailable — showing retrieved notes only.');
-      answerEl.textContent = 'No AI answer available.';
+      await renderStreamingAnswer(chromeStream, answerEl);
+      return;
     }
+
+    const llmBody = await synthesizeOpenAI(queryText, results);
+    if (llmBody) {
+      setStatus('');
+      answerSection.style.display = 'block';
+      await renderOpenAIStream(llmBody, answerEl);
+      return;
+    }
+
+    setStatus('No AI backend available — showing retrieved notes only.');
+    answerSection.style.display = 'none';
   } catch (err) {
     console.error(err);
-    setStatus('Error during synthesis.');
+    setStatus('Error during synthesis: ' + err.message);
   }
 }
 
 async function init() {
+  loadConfig();
   try {
     await loadData();
     setStatus('Loading model...');

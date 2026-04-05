@@ -14,6 +14,21 @@
       <input id="query" type="search" placeholder="Ask anything…" autocomplete="off">
       <button type="submit">Search</button>
     </form>
+    <details id="settings">
+      <summary>LLM Settings</summary>
+      <div class="settings-body">
+        <label>
+          OpenAI-compatible endpoint
+          <input id="llm-endpoint" type="url" placeholder="http://localhost:11434/v1" spellcheck="false">
+        </label>
+        <label>
+          Model name
+          <input id="llm-model" type="text" placeholder="llama3">
+        </label>
+        <p class="settings-hint">Leave endpoint blank to use Chrome AI only.</p>
+      </div>
+    </details>
+
     <section id="answer-section">
       <h2>Answer</h2>
       <div id="answer"></div>

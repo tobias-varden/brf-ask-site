@@ -52,6 +52,49 @@ button:hover {
   background-color: #0056b3;
 }
 
+#settings {
+  margin-bottom: 1.5rem;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+}
+
+#settings summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
+  user-select: none;
+}
+
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.settings-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.settings-body input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: monospace;
+}
+
+.settings-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #999;
+}
+
 section {
   margin-bottom: 2rem;
 }
