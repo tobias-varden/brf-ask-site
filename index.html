@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zettel Search</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Zettel Search</h1>
+    <p id="status">Loading model…</p>
+    <form id="search-form">
+      <input id="query" type="search" placeholder="Ask anything…" autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+    <section id="answer-section">
+      <h2>Answer</h2>
+      <div id="answer"></div>
+    </section>
+    <section id="results-section">
+      <h2>Sources</h2>
+      <div id="results"></div>
+    </section>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

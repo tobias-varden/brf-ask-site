@@ -1,0 +1,6 @@
+{
+  "model": "google/embeddinggemma-300m",
+  "dims": 768,
+  "n_chunks": 30,
+  "built_at": "2026-04-05T09:31:21.234220"
+}
